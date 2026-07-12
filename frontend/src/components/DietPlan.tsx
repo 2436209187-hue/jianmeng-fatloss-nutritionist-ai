@@ -88,7 +88,7 @@ export default function DietPlan() {
           {/* 生成按钮 - 置顶 */}
           <button onClick={handleSubmit} disabled={loading}
             className="w-full bg-brand-red hover:bg-brand-red-hover text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 py-2.5 shadow-md shadow-brand-red/10 transition cursor-pointer disabled:opacity-60 disabled:cursor-wait">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /><span>AI 生成中...</span></> : <><Sparkles className="w-4 h-4" /><span>生成 7 日饮食方案</span></>}
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /><span>AI 生成中（约1-2分钟）...</span></> : <><Sparkles className="w-4 h-4" /><span>生成 7 日饮食方案</span></>}
           </button>
 
           {/* 错误提示 */}
@@ -202,6 +202,9 @@ export default function DietPlan() {
               </div>
               <h4 className="font-bold text-slate-800 text-sm">AI 正在生成方案</h4>
               <p className="text-xs text-slate-400 mt-1">综合分析营员指标和口味偏好中...</p>
+              <div className="mt-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-[11px] text-amber-700 font-medium">⏳ 方案生成可能需要 1-2 分钟，请稍等</p>
+              </div>
             </div>
           ) : result ? (
             <div className="space-y-3">
