@@ -1,9 +1,15 @@
 import dotenv from "dotenv";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { resolve } from "path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: resolve(__dirname, "..", "..", ".env") });
+// Load .env from multiple possible locations (works in both ESM and CJS)
+const possiblePaths = [
+  resolve(process.cwd(), "backend/.env"),
+  resolve(process.cwd(), ".env"),
+];
+
+for (const p of possiblePaths) {
+  dotenv.config({ path: p });
+}
 
 export const env = {
   PORT: parseInt(process.env.PORT || "3000", 10),

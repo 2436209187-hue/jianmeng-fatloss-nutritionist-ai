@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
 import { isFastGPTCongifured } from "./services/fastgpt.service";
@@ -60,6 +61,13 @@ app.post("/api/menu/recommend", (_req, res) => {
     return;
   }
   res.json({ message: "FastGPT route reserved" });
+});
+
+// 静态文件服务（打包模式：后端直接托管前端）
+const frontendDist = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendDist));
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
 });
 
 // Error handler

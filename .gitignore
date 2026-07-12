@@ -37,3 +37,7 @@ npm-debug.log*
 
 # WorkBuddy
 .workbuddy/
+
+# Node portable download
+node-portable/
+node-portable.zip
