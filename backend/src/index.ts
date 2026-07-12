@@ -16,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: env.FRONTEND_URL || true,
   credentials: true,
 }));
 app.use(express.json({ limit: "20mb" }));
@@ -65,13 +65,15 @@ app.post("/api/menu/recommend", (_req, res) => {
 // Error handler
 app.use(errorHandler);
 
-// Start server
-app.listen(env.PORT, () => {
-  console.log(`\n🚀 减脂营营养师工作台 - 后端服务`);
-  console.log(`  地址: http://localhost:${env.PORT}`);
-  console.log(`  Deepseek AI: ${env.DEEPSEEK_API_KEY ? "已配置 ✓" : "未配置 ✗"}`);
-  console.log(`  FastGPT: ${env.FASTGPT_API_URL ? "已配置 ✓" : "未配置 ✗ (4个功能待接入)"}`);
-  console.log(`  前端: ${env.FRONTEND_URL}\n`);
-});
+// Start server (only in local dev, not in Vercel serverless)
+if (process.env.VERCEL !== "1") {
+  app.listen(env.PORT, () => {
+    console.log(`\n🚀 减脂营营养师工作台 - 后端服务`);
+    console.log(`  地址: http://localhost:${env.PORT}`);
+    console.log(`  Deepseek AI: ${env.DEEPSEEK_API_KEY ? "已配置 ✓" : "未配置 ✗"}`);
+    console.log(`  FastGPT: ${env.FASTGPT_API_URL ? "已配置 ✓" : "未配置 ✗ (4个功能待接入)"}`);
+    console.log(`  前端: ${env.FRONTEND_URL}\n`);
+  });
+}
 
 export default app;

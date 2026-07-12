@@ -12,6 +12,7 @@ dist/
 build/
 */dist/
 */build/
+.vercel/
 
 # Database
 *.db
