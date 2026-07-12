@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("nutritionist")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  campers    Camper[]
+  dietPlans  DietPlan[]
+  auditLogs  AuditLog[]
+  diningLogs DiningLog[]
+  apiLogs    ApiLog[]
+
+  @@map("users")
+}
+
+model Camper {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  name            String
+  age             Int?
+  gender          String?
+  height          Float?
+  weight          Float?
+  targetWeight    Float?   @map("target_weight")
+  medicalHistory  String?  @map("medical_history")
+  allergies       String?
+  digestiveIssues String?  @map("digestive_issues")
+  tastePreferences String? @map("taste_preferences")
+  activityLevel   String?  @map("activity_level")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dietPlans DietPlan[]
+
+  @@map("campers")
+}
+
+model DietPlan {
+  id        String   @id @default(uuid())
+  camperId  String   @map("camper_id")
+  userId    String   @map("user_id")
+  planData  Json     @map("plan_data")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  camper Camper @relation(fields: [camperId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("diet_plans")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  planData    Json     @map("plan_data")
+  auditResult Json     @map("audit_result")
+  dietGoal    String?  @map("diet_goal")
+  overallScore Int?    @map("overall_score")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model DiningLog {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  scenario   String
+  goal       String
+  resultData Json     @map("result_data")
+  score      Int?     @map("score")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("dining_logs")
+}
+
+model ApiLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  apiType      String   @map("api_type")
+  inputSummary String?  @map("input_summary")
+  status       String   @default("success")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_logs")
+}

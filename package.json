@@ -1,0 +1,19 @@
+{
+  "name": "jianmeng-nutrition-workbench",
+  "private": true,
+  "version": "1.0.0",
+  "description": "减脂营营养师AI智能工作台 - 前后端一体化网站",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "db:setup": "cd backend && npx prisma db push",
+    "db:studio": "cd backend && npx prisma studio",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

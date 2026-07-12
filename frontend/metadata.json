@@ -1,0 +1,6 @@
+{
+  "name": "减脂营·营养师AI智能工作台",
+  "description": "提供饮食营养结构识别、配料成分深度检测、外食控卡点餐指导以及7日饮食方案审核等功能的高级营养师工作台。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
