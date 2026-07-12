@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install && cd backend && npm install && npx tsc && cd ../frontend && npm install && npm run build",
+  "buildCommand": "npm install && cd backend && npm install && cd ../frontend && npm install && npm run build && cd .. && npx esbuild backend/src/index.ts --bundle --platform=node --format=cjs --outfile=backend/dist/index.js --external:@prisma/client --external:@supabase/supabase-js",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     { "source": "/api", "destination": "/api/index" },
