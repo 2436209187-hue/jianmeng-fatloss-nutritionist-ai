@@ -1,0 +1,27 @@
+# 减脂营营养师AI智能工作台 - Cursor AI 规则
+
+## 项目概述
+- 前端：React 19 + Vite 6 + Tailwind CSS 4（端口 5173）
+- 后端：Express + Prisma + TypeScript（端口 3000）
+- 数据库：Supabase PostgreSQL
+- 部署：Vercel（Serverless Functions）
+
+## 代码规范
+- 使用 TypeScript，避免 any 类型
+- 前端使用函数式组件 + React Hooks
+- 样式使用 Tailwind CSS，不写自定义 CSS（除非必要）
+- 后端 API 路由统一在 backend/src/routes/ 下
+- Prisma schema 在 backend/prisma/schema.prisma
+
+## 目录结构
+- frontend/src/ - 前端源码
+- backend/src/ - 后端源码
+- backend/src/routes/ - API 路由
+- backend/prisma/ - 数据库 schema 和迁移
+- api/ - Vercel Serverless Functions
+
+## 注意事项
+- 不要修改 node-portable/ 目录（便携版 Node 运行时）
+- .env 文件不提交到版本控制
+- 前端通过 Vite 代理访问后端 API
+- FastGPT 相关功能（饮食方案、饮食识别等）尚未接入，前端有占位页面

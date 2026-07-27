@@ -10,63 +10,82 @@ const router = Router();
 router.use(authMiddleware);
 
 router.post("/generate", async (req: Request, res: Response) => {
-  try {
-    const input = req.body;
+  const input = req.body;
 
-    let result: any;
+  // 营养师输入变量（FastGPT 和 DeepSeek 共用）
+  const variables: Record<string, string | number> = {
+    gender: input.gender === "male" ? "男" : input.gender === "female" ? "女" : "",
+    age: Number(input.age) || 0,
+    height_cm: Number(input.height) || 0,
+    weight_kg: Number(input.weight) || 0,
+    body_fat_pct: Number(input.bodyFat) || 0,
+    waist_cm: Number(input.waist) || 0,
+    target_weight_kg: Number(input.targetWeight) || 0,
+    target_loss_rate: `${input.lossSpeed}kg/周`,
+    diagnosed_diseases: input.medicalHistory || "无",
+    food_allergens: input.allergies || "无",
+    digestive_symptoms: input.digestion || "无",
+    taste_preference: input.tastes || "无",
+    activity_level: mapDailyActivity(input.dailyActivity),
+    exercise_frequency: mapExercise(input.exercise),
+  };
 
-    if (isFastGPTCongifured()) {
-      // FastGPT 智能体：通过全局变量传参
-      const variables: Record<string, string | number> = {
-        gender: input.gender === "male" ? "男" : input.gender === "female" ? "女" : "",
-        age: Number(input.age) || 0,
-        height_cm: Number(input.height) || 0,
-        weight_kg: Number(input.weight) || 0,
-        body_fat_pct: Number(input.bodyFat) || 0,
-        waist_cm: Number(input.waist) || 0,
-        target_weight_kg: Number(input.targetWeight) || 0,
-        target_loss_rate: `${input.lossSpeed}kg/周`,
-        diagnosed_diseases: input.medicalHistory || "无",
-        food_allergens: input.allergies || "无",
-        digestive_symptoms: input.digestion || "无",
-        taste_preference: input.tastes || "无",
-        activity_level: mapDailyActivity(input.dailyActivity),
-        exercise_frequency: mapExercise(input.exercise),
-      };
+  let result: any;
+  let usedFallback = false;
 
+  // 策略 1：优先使用 FastGPT（带超时保护）
+  if (isFastGPTCongifured()) {
+    try {
       const content = await callFastGPTWithVariables("请生成7日饮食方案", variables);
       const parsed = JSON.parse(content);
-
-      // FastGPT 返回 { status, data: { core_meal_principle, seven_day_total, days } }
       result = parsed.data || parsed;
-    } else if (isGeminiAvailable()) {
+    } catch (error: any) {
+      console.error("FastGPT 饮食方案生成失败，尝试 DeepSeek 备用:", error.message);
+      // 不 return，继续走备用方案
+    }
+  }
+
+  // 策略 2：FastGPT 失败时降级到 DeepSeek
+  if (!result && isGeminiAvailable()) {
+    try {
       result = await generateDietPlan(input);
-    } else {
-      res.status(503).json({ error: "AI 服务未配置" });
+      usedFallback = true;
+      console.log("饮食方案已通过 DeepSeek 备用生成");
+    } catch (error: any) {
+      console.error("DeepSeek 饮食方案生成也失败:", error.message);
+      await createApiLog({
+        userId: req.user!.userId,
+        apiType: "diet_plan",
+        inputSummary: req.body.name || "未知营员",
+        status: "failed",
+      });
+      if (error instanceof SyntaxError) {
+        res.status(500).json({ error: "AI 返回格式异常，请重试" });
+        return;
+      }
+      res.status(500).json({ error: error.message || "饮食方案生成失败" });
       return;
     }
+  }
 
-    await createApiLog({
-      userId: req.user!.userId,
-      apiType: "diet_plan",
-      inputSummary: `${input.name || "未知营员"} / ${input.targetWeight}kg目标`,
-    });
-
-    res.json(result);
-  } catch (error: any) {
-    console.error("饮食方案生成失败:", error);
+  if (!result) {
     await createApiLog({
       userId: req.user!.userId,
       apiType: "diet_plan",
       inputSummary: req.body.name || "未知营员",
       status: "failed",
     });
-    if (error instanceof SyntaxError) {
-      res.status(500).json({ error: "AI 返回格式异常，请重试" });
-      return;
-    }
-    res.status(500).json({ error: error.message || "饮食方案生成失败" });
+    res.status(503).json({ error: "AI 服务均不可用，请检查 FastGPT 和 DeepSeek 配置" });
+    return;
   }
+
+  await createApiLog({
+    userId: req.user!.userId,
+    apiType: "diet_plan",
+    inputSummary: `${input.name || "未知营员"} / ${input.targetWeight}kg目标${usedFallback ? " (DeepSeek)" : ""}`,
+  });
+
+  res.json(result);
 });
 
 function mapDailyActivity(value: string): string {

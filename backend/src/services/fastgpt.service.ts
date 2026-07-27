@@ -1,6 +1,8 @@
 import { env } from "../config/env";
 
 const FASTGPT_CHAT_URL = "/v1/chat/completions";
+// FastGPT 请求超时时间（毫秒）— 智能体可能需要较长时间处理
+const FASTGPT_TIMEOUT_MS = 120_000;
 
 export function isFastGPTCongifured(): boolean {
   return !!(env.FASTGPT_API_URL && env.FASTGPT_API_KEY);
@@ -29,6 +31,7 @@ export async function callFastGPTWithVariables(
       stream: false,
       variables,
     }),
+    signal: AbortSignal.timeout(FASTGPT_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -37,6 +40,11 @@ export async function callFastGPTWithVariables(
   }
 
   const data = (await response.json()) as any;
+
+  // FastGPT 错误响应处理
+  if (data.code && data.code !== 200) {
+    throw new Error(`FastGPT 错误: ${data.message || data.statusText || "未知错误"}`);
+  }
 
   const content = data.choices?.[0]?.message?.content;
   if (!content) {

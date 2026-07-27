@@ -236,17 +236,12 @@ export default function DietRecognition() {
       if (response.ok) {
         setResult(data);
       } else {
-        // Handle error elegantly
-        if (data.error === "API_KEY_MISSING") {
-          setError(data.message);
-        } else {
-          setError(data.message || "分析失败，请稍后重试");
-        }
+        setError(data.error || data.message || "分析失败，请稍后重试");
       }
     } catch (err: any) {
       clearInterval(timer);
       console.error(err);
-      setError("连接服务器超时，请确保后台服务器运行正常，并已在 secrets 中注入 API Key。");
+      setError("连接服务器失败。请确认：1) 服务窗口是否还在运行 2) 电脑能否访问 cloud.fastgpt.io（可能被防火墙拦截）");
     } finally {
       setLoading(false);
     }

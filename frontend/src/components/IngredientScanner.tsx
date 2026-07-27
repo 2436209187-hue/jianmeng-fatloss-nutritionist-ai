@@ -242,16 +242,12 @@ export default function IngredientScanner() {
       if (response.ok) {
         setResult(data);
       } else {
-        if (data.error === "API_KEY_MISSING") {
-          setError(data.message);
-        } else {
-          setError(data.message || "配料表识别失败，请重试");
-        }
+        setError(data.error || data.message || "配料表识别失败，请重试");
       }
     } catch (err: any) {
       clearInterval(timer);
       console.error(err);
-      setError("连接服务器超时。请确认后台 Express 服务端运行正常且密钥已在 secrets 中注入。");
+      setError("连接服务器失败。请确认：1) 服务窗口是否还在运行 2) 电脑能否访问 cloud.fastgpt.io（可能被防火墙拦截）");
     } finally {
       setLoading(false);
     }

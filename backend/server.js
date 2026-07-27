@@ -50928,7 +50928,11 @@ router7.post("/analyze", async (req, res) => {
   } catch (error) {
     await createApiLog({ userId: req.user.userId, apiType: "diet_analyze", status: "failed" });
     console.error("\u996E\u98DF\u8BC6\u522B\u8C03\u7528\u5931\u8D25:", error.message);
-    res.status(500).json({ success: false, error: "\u672A\u8BC6\u522B\u5230\u98DF\u7269\uFF0C\u8BF7\u91CD\u65B0\u4E0A\u4F20" });
+    const detail = error.cause?.code || error.message || "\u672A\u77E5\u9519\u8BEF";
+    res.status(500).json({
+      success: false,
+      error: `FastGPT \u8C03\u7528\u5931\u8D25\uFF08${detail}\uFF09\u3002\u8BF7\u68C0\u67E5\u7F51\u7EDC\u662F\u5426\u80FD\u8BBF\u95EE cloud.fastgpt.io`
+    });
   }
 });
 router7.post("/ingredient-analyze", async (req, res) => {
@@ -50984,7 +50988,11 @@ router7.post("/ingredient-analyze", async (req, res) => {
   } catch (error) {
     await createApiLog({ userId: req.user.userId, apiType: "ingredient_analyze", status: "failed" });
     console.error("\u914D\u6599\u5206\u6790\u8C03\u7528\u5931\u8D25:", error.message);
-    res.status(500).json({ success: false, error: "\u65E0\u6CD5\u8BC6\u522B\u914D\u6599\u8868\uFF0C\u8BF7\u91CD\u65B0\u4E0A\u4F20" });
+    const detail = error.cause?.code || error.message || "\u672A\u77E5\u9519\u8BEF";
+    res.status(500).json({
+      success: false,
+      error: `FastGPT \u8C03\u7528\u5931\u8D25\uFF08${detail}\uFF09\u3002\u8BF7\u68C0\u67E5\u7F51\u7EDC\u662F\u5426\u80FD\u8BBF\u95EE cloud.fastgpt.io`
+    });
   }
 });
 router7.post("/menu-recommend", async (req, res) => {
@@ -51040,7 +51048,11 @@ router7.post("/menu-recommend", async (req, res) => {
   } catch (error) {
     await createApiLog({ userId: req.user.userId, apiType: "menu_recommend", status: "failed" });
     console.error("\u83DC\u5355\u5EFA\u8BAE\u8C03\u7528\u5931\u8D25:", error.message);
-    res.status(500).json({ success: false, error: "\u65E0\u6CD5\u8BC6\u522B\u83DC\u5355\uFF0C\u8BF7\u91CD\u65B0\u4E0A\u4F20\u56FE\u7247" });
+    const detail = error.cause?.code || error.message || "\u672A\u77E5\u9519\u8BEF";
+    res.status(500).json({
+      success: false,
+      error: `FastGPT \u8C03\u7528\u5931\u8D25\uFF08${detail}\uFF09\u3002\u8BF7\u68C0\u67E5\u7F51\u7EDC\u662F\u5426\u80FD\u8BBF\u95EE cloud.fastgpt.io`
+    });
   }
 });
 var fastgpt_routes_default = router7;
@@ -51271,6 +51283,17 @@ if (process.env.VERCEL !== "1") {
     console.log(`  FastGPT: ${env.FASTGPT_API_URL ? "\u5DF2\u914D\u7F6E \u2713" : "\u672A\u914D\u7F6E \u2717 (4\u4E2A\u529F\u80FD\u5F85\u63A5\u5165)"}`);
     console.log(`  \u524D\u7AEF: ${env.FRONTEND_URL}
 `);
+    if (env.FASTGPT_API_URL) {
+      fetch(`${env.FASTGPT_API_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.FASTGPT_API_KEY}` },
+        body: JSON.stringify({ model: "plan", appId: env.FASTGPT_APP_ID, messages: [{ role: "user", content: "ping" }], stream: false }),
+        signal: AbortSignal.timeout(5e3)
+      }).then(() => console.log(`  FastGPT \u8FDE\u901A\u6027: ${"\u53EF\u8BBF\u95EE \u2713"}`)).catch((e) => {
+        console.log(`  FastGPT \u8FDE\u901A\u6027: ${"\u4E0D\u53EF\u8BBF\u95EE \u2717 (" + (e.cause?.code || e.message) + ")"}`);
+        console.log(`  \u63D0\u793A: \u8BF7\u68C0\u67E5\u7535\u8111\u662F\u5426\u80FD\u8BBF\u95EE cloud.fastgpt.io\uFF08\u53EF\u80FD\u88AB\u9632\u706B\u5899\u62E6\u622A\uFF09`);
+      });
+    }
   });
 }
 var index_default = app;

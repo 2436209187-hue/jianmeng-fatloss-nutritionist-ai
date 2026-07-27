@@ -263,17 +263,12 @@ export default function MenuRecommend() {
       if (response.ok) {
         setResult(data);
       } else {
-        if (data.error === "API_KEY_MISSING") {
-          setError(data.message);
-        } else {
-          setError(data.message || "菜单分析推荐失败，请重试");
-        }
+        setError(data.error || data.message || "菜单分析推荐失败，请重试");
       }
     } catch (err: any) {
       clearInterval(timer);
       console.error(err);
-      setError("连接服务器超时。请确保后台服务正常启动并在 Secrets 中配置 GEMINI_API_KEY。");
-    } finally {
+      setError("连接服务器失败。请确认：1) 服务窗口是否还在运行 2) 电脑能否访问 cloud.fastgpt.io（可能被防火墙拦截）");
       setLoading(false);
     }
   };
